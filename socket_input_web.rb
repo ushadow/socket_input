@@ -19,9 +19,13 @@ class SocketInputWeb < Sinatra::Application
     erb :input_test
   end
   
-  # Websocket input JS.
+  # WebSocket input JS.
   get '/application.js' do
     coffee Dir.glob('javascripts/**/*.coffee').sort.map { |f| File.read f }.
       join("\n")
   end
+  
+  # WebSocket input CSS.
+  get('/application.css') { 
+    scss :"../stylesheets/application" }
 end

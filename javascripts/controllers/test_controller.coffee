@@ -1,24 +1,28 @@
 class TestController
   constructor: (@view, @ws_uri)->
-    @connect()
+    view.onConnect = => @connect()
+    view.onDisconnect = => @disconnect()
     
   connect: ->
-    @ws = new WebSocket(@ws_uri) 
-    @view.showInfo 'connecting'
-    @ws.onopen = @onSocketOpen
-    @ws.onclose = @onSocketClose
-    @ws.onerror = @onSocketError
-    @ws.onmessage = @onMessage
-  
-  onSocketOpen: =>
-    @view.showInfo 'connected'
-    @ws.send('ping')
-    
-  onSocketClose: =>
-    @view.showInfo 'disconnected'
+    @view.showInfo 'Connecting'
 
-  onSocketError: (errorMessage) =>
+    @ws = new WebSocket(@ws_uri) 
+    @ws.onopen = => @onSocketOpen()
+    @ws.onclose = => @onSocketClose()
+    @ws.onerror = (errorMessage) => @onSocketError errorMessage
+    @ws.onmessage = (event) => @onMessage event.data
+  
+  disconnect: ->
+    @ws.close()
+    
+  onSocketOpen: ->
+    @view.showInfo 'Connected'
+    
+  onSocketClose: ->
+    @view.showInfo 'Disconnected'
+
+  onSocketError: (errorMessage) ->
     @view.showInfo "WebSocket Error: #{errorMessage}"
     
-  onMessage: (event) =>
-    @view.showInfo "Server: #{event.data}"
+  onMessage: (data) ->
+    @view.showInfo "Server: #{data}"

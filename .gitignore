@@ -1,2 +1,6 @@
+.sass-cache
 *.log
 *.rbc
+server/bin/
+server/lib/*
+!server/lib/.gitkeep
