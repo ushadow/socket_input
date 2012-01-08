@@ -5,6 +5,7 @@ Bundler.setup :default, :web
 require 'sinatra'
 
 class SocketInputWeb < Sinatra::Application
+  
   helpers do 
   end
   
@@ -16,5 +17,11 @@ class SocketInputWeb < Sinatra::Application
   # Input test HTML.
   get '/input_test' do
     erb :input_test
+  end
+  
+  # Websocket input JS.
+  get '/application.js' do
+    coffee Dir.glob('javascripts/**/*.coffee').sort.map { |f| File.read f }.
+      join("\n")
   end
 end
