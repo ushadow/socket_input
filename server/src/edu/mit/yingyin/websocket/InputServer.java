@@ -79,9 +79,8 @@ public class InputServer extends Server {
     }
   }
   
-  SelectChannelConnector connector;
-  WebSocketHandler wsHandler;
-  WebSocket websocket;
+  private SelectChannelConnector connector;
+  private WebSocketHandler wsHandler;
   
   public InputServer(int port) {
     connector = new SelectChannelConnector();
