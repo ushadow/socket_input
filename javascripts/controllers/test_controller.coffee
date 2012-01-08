@@ -4,19 +4,21 @@ class TestController
     
   connect: ->
     @ws = new WebSocket(@ws_uri) 
-    @ws.onopen = => @onSocketOpen
-    @ws.onclose = => @onSocketClose
-    @ws.onerror = (error) => @onSocketError error
-    @ws.onmessage = (event) => @onMessage event.data
+    @view.showInfo 'connecting'
+    @ws.onopen = @onSocketOpen
+    @ws.onclose = @onSocketClose
+    @ws.onerror = @onSocketError
+    @ws.onmessage = @onMessage
   
-  onSocketOpen: ->
+  onSocketOpen: =>
     @view.showInfo 'connected'
+    @ws.send('ping')
     
-  onSocketClose: ->
+  onSocketClose: =>
     @view.showInfo 'disconnected'
 
-  onSocketError: (errorMessage) ->
+  onSocketError: (errorMessage) =>
     @view.showInfo "WebSocket Error: #{errorMessage}"
     
-  onMessage: (data) ->
-    @view.showInfo "Server: #{data}"
+  onMessage: (event) =>
+    @view.showInfo "Server: #{event.data}"

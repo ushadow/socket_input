@@ -1,7 +1,6 @@
 # Sets up everything when the document loads.
 $ ->
   view = new TestView()
-  controller = new TestController view, 'ws://localhost'
-  view.showInfo 'connecting'
+  controller = new TestController view, 'ws://echo.websocket.org/'
     
-      
+  window.controller = controller    
