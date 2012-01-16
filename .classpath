@@ -2,7 +2,8 @@
 <classpath>
 	<classpathentry kind="src" path="server/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="server/lib/servlet-api-3.0.jar"/>
 	<classpathentry kind="lib" path="server/lib/jetty-all-8.0.4.v20111024.jar"/>
+	<classpathentry kind="lib" path="/usr/share/java/org.OpenNI.jar"/>
+	<classpathentry kind="lib" path="server/lib/servlet-api-3.0.jar"/>
 	<classpathentry kind="output" path="server/bin"/>
 </classpath>

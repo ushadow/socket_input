@@ -4,11 +4,14 @@ import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.OpenNI.GestureRecognizedEventArgs;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.jetty.websocket.WebSocket.Connection;
 import org.eclipse.jetty.websocket.WebSocketHandler;
+
+import edu.mit.yingyin.websocket.HandTracker1.HandEventListener;
 
 /**
  * A WebSocket server that sends input events to clients.
@@ -25,22 +28,18 @@ public class InputServer extends Server {
     public void onClose(int code, String message) {
       System.out.printf("%s#onClose %d %s\n", 
                          this.getClass().getSimpleName(), code, message);
-      try {
-        if (inputListener != null) {
-          inputListener.setStop();
-          inputListener.join();
-        }
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
+      handTracker.removeListener(inputListener);
     }
 
+    /**
+     * A new connection is opened.
+     */
     @Override
     public void onOpen(Connection connection) {
       System.out.printf("%s#onOpen %s\n",this.getClass().getSimpleName(),
                         connection);
       inputListener = new InputListener(connection);
-      inputListener.start();
+      handTracker.addListener(inputListener);
     }
   }
   
@@ -49,38 +48,32 @@ public class InputServer extends Server {
    * @author yingyin
    *
    */
-  private class InputListener extends Thread {
+  private class InputListener implements HandEventListener {
     private Connection connection;
     private int count = 0;
-    private boolean run = true;
     
     public InputListener(Connection connection) {
       this.connection = connection;
     }
     
+
     @Override
-    public void run() {
-      while(run) {
-        try {
-          connection.sendMessage("input " + count++);
-          Thread.sleep(1000);
-        } catch (IOException e) {
-          System.err.println(e.getMessage());
-          return;
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-          return;
-        }
+    public void gesturePerformed(GestureRecognizedEventArgs args) {
+      try {
+        connection.sendMessage("Click detected: " + count++);
+      } catch (IOException e) {
+        e.printStackTrace();
       }
-    }
-    
-    public void setStop() {
-      run = false;
     }
   }
   
+  /**
+   * This connector uses efficient NIO buffers with a non blocking threading 
+   * model.
+   */
   private SelectChannelConnector connector;
   private WebSocketHandler wsHandler;
+  private HandTracker1 handTracker = new HandTracker1();
   
   public InputServer(int port) {
     connector = new SelectChannelConnector();
@@ -96,6 +89,7 @@ public class InputServer extends Server {
       }
     };
     setHandler(wsHandler);
+    handTracker.start();
   }
   
   public static void main(String... args) {
