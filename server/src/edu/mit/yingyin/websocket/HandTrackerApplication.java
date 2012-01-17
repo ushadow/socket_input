@@ -56,16 +56,6 @@ public class HandTrackerApplication {
 		});
     }
 
-    public void buildUI()
-    {
-        if (viewer == null)
-        {
-            viewer = new HandTracker();
-        }
-        viewer.updateDepth();
-        viewer.repaint();
-    }
-
     public static void main(String s[])
     {
         JFrame f = new JFrame("OpenNI Hand Tracker");
