@@ -12,9 +12,9 @@
     <property name="source" value="1.6"/>
     <path id="socket_input.classpath">
         <pathelement location="server/bin"/>
-        <pathelement location="server/lib/servlet-api-3.0.jar"/>
         <pathelement location="server/lib/jetty-all-8.0.4.v20111024.jar"/>
         <pathelement location="../../../../../usr/share/java/org.OpenNI.jar"/>
+        <pathelement location="server/lib/servlet-api-3.0.jar"/>
     </path>
     <target name="init">
         <mkdir dir="server/bin"/>
@@ -57,8 +57,8 @@
             <classpath refid="socket_input.classpath"/>
         </java>
     </target>
-    <target name="HandTracker">
-        <java classname="edu.mit.yingyin.websocket.HandTracker" failonerror="true" fork="yes">
+    <target name="HandTrackerApplication">
+        <java classname="edu.mit.yingyin.websocket.HandTrackerApplication" failonerror="true" fork="yes">
             <classpath refid="socket_input.classpath"/>
         </java>
     </target>

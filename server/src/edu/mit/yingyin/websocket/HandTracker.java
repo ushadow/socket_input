@@ -23,59 +23,28 @@ package edu.mit.yingyin.websocket;
 
 import org.OpenNI.*;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
 import java.util.HashMap;
 import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.*;
 
-public class HandTracker extends Component
-{
-  class MyGestureRecognized implements IObserver<GestureRecognizedEventArgs>
-  {
+public class HandTracker extends Component {
+  
+  class GestureRecognizedObserver implements 
+      IObserver<GestureRecognizedEventArgs> {
 
     @Override
     public void update(IObservable<GestureRecognizedEventArgs> observable,
-        GestureRecognizedEventArgs args)
-    {
-      try
-      {
-        handsGen.StartTracking(args.getEndPosition());
-        gestureGen.removeGesture("Click");
-        System.out.println("Click detected.");
-      } catch (StatusException e)
-      {
-        e.printStackTrace();
-      }
+        GestureRecognizedEventArgs args) {
+      System.out.println("Gesture recognized:" + args.getGesture());
     }
-  }
-  class MyHandCreateEvent implements IObserver<ActiveHandEventArgs>
-  {
-    public void update(IObservable<ActiveHandEventArgs> observable,
-        ActiveHandEventArgs args)
-    {
-      System.out.println("New hand created.");
-    }
-  }
-  class MyHandUpdateEvent implements IObserver<ActiveHandEventArgs>
-  {
-    public void update(IObservable<ActiveHandEventArgs> observable,
-        ActiveHandEventArgs args)
-    {
-      System.out.println("Hand updated.");
-    }
+    
   }
   
-  class MyHandDestroyEvent implements IObserver<InactiveHandEventArgs>
-  {
-    public void update(IObservable<InactiveHandEventArgs> observable,
-        InactiveHandEventArgs args)
-    {
-      System.out.println("Hand destroyed.");
-    }
-  }
-	class NewUserObserver implements IObserver<UserEventArgs>
-	{
+	class NewUserObserver implements IObserver<UserEventArgs> {
 		@Override
 		public void update(IObservable<UserEventArgs> observable,
 				UserEventArgs args)
@@ -180,6 +149,11 @@ public class HandTracker extends Component
     private GestureGenerator gestureGen;
     private HandsGenerator handsGen;
     
+    private ByteBuffer sceneBuffer, depthBuffer;
+    private int depthByteBufferSize, sceneByteBufferSize;
+    
+    private DepthMetaData depthMD;
+    private SceneMetaData sceneMD;
     
     private BufferedImage bimg;
     int width, height;
@@ -193,13 +167,17 @@ public class HandTracker extends Component
             context = Context.createFromXmlFile(SAMPLE_XML_FILE, scriptNode);
 
             depthGen = DepthGenerator.create(context);
-            DepthMetaData depthMD = depthGen.getMetaData();
+            depthMD = depthGen.getMetaData();
 
             histogram = new float[10000];
             width = depthMD.getFullXRes();
             height = depthMD.getFullYRes();
+            depthByteBufferSize = width * height * 
+                                  depthMD.getData().getBytesPerPixel();
+            depthBuffer = ByteBuffer.allocateDirect(depthByteBufferSize);
+            depthBuffer.order(ByteOrder.LITTLE_ENDIAN);
             
-            imgbytes = new byte[width*height*3];
+            imgbytes = new byte[width * height * 3];
 
             userGen = UserGenerator.create(context);
             skeletonCap = userGen.getSkeletonCapability();
@@ -216,15 +194,18 @@ public class HandTracker extends Component
             skeletonCap.setSkeletonProfile(SkeletonProfile.ALL);
             
             gestureGen = GestureGenerator.create(context);
-            gestureGen.addGesture("Click");
-            gestureGen.getGestureRecognizedEvent().addObserver(new MyGestureRecognized());
+            gestureGen.getGestureRecognizedEvent().addObserver(new GestureRecognizedObserver());
             
-            handsGen = HandsGenerator.create(context);
-            handsGen.getHandCreateEvent().addObserver(new MyHandCreateEvent());
-            handsGen.getHandUpdateEvent().addObserver(new MyHandUpdateEvent());
-            handsGen.getHandDestroyEvent().addObserver(new MyHandDestroyEvent());
-			
+            sceneMD = userGen.getUserPixels(0);
+            int sceneWidth = sceneMD.getFullXRes();
+            int sceneHeight = sceneMD.getFullYRes();
+            sceneByteBufferSize = sceneWidth * sceneHeight * 
+                                  sceneMD.getData().getBytesPerPixel();
+            sceneBuffer = ByteBuffer.allocateDirect(sceneByteBufferSize);
+            sceneBuffer.order(ByteOrder.LITTLE_ENDIAN);
+            
             context.startGeneratingAll();
+            gestureGen.addGesture("Wave");
         } catch (GeneralException e) {
             e.printStackTrace();
             System.exit(1);
@@ -270,12 +251,13 @@ public class HandTracker extends Component
         try {
 
             context.waitAnyUpdateAll();
-
-            DepthMetaData depthMD = depthGen.getMetaData();
-            SceneMetaData sceneMD = userGen.getUserPixels(0);
-
-            ShortBuffer scene = sceneMD.getData().createShortBuffer();
-            ShortBuffer depth = depthMD.getData().createShortBuffer();
+            
+            sceneMD.getData().copyToBuffer(sceneBuffer, sceneByteBufferSize);
+            ShortBuffer scene = sceneBuffer.asShortBuffer();
+            
+            depthMD.getData().copyToBuffer(depthBuffer, depthByteBufferSize);
+            ShortBuffer depth = depthBuffer.asShortBuffer();
+            
             calcHist(depth);
             depth.rewind();
             
@@ -451,6 +433,10 @@ public class HandTracker extends Component
 		{
 			e.printStackTrace();
 		}
+    }
+    
+    public void release() {
+      context.release();
     }
 }
 
