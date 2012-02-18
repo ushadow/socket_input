@@ -11,7 +11,7 @@ import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.jetty.websocket.WebSocket.Connection;
 import org.eclipse.jetty.websocket.WebSocketHandler;
 
-import edu.mit.yingyin.websocket.HandTracker1.HandEventListener;
+//import edu.mit.yingyin.websocket.HandTracker.HandEventListener;
 
 /**
  * A WebSocket server that sends input events to clients.
@@ -22,13 +22,13 @@ public class InputServer extends Server {
   
   private class InputWebSocket implements WebSocket {
 
-    private InputListener inputListener;
+//    private InputListener inputListener;
     
     @Override
     public void onClose(int code, String message) {
       System.out.printf("%s#onClose %d %s\n", 
                          this.getClass().getSimpleName(), code, message);
-      handTracker.removeListener(inputListener);
+//      handTracker.removeListener(inputListener);
     }
 
     /**
@@ -38,34 +38,34 @@ public class InputServer extends Server {
     public void onOpen(Connection connection) {
       System.out.printf("%s#onOpen %s\n",this.getClass().getSimpleName(),
                         connection);
-      inputListener = new InputListener(connection);
-      handTracker.addListener(inputListener);
+//      inputListener = new InputListener(connection);
+//      handTracker.addListener(inputListener);
     }
   }
   
-  /**
-   * A thread that listens to input envets and sends them to clients.
-   * @author yingyin
-   *
-   */
-  private class InputListener implements HandEventListener {
-    private Connection connection;
-    private int count = 0;
-    
-    public InputListener(Connection connection) {
-      this.connection = connection;
-    }
-    
-
-    @Override
-    public void gesturePerformed(GestureRecognizedEventArgs args) {
-      try {
-        connection.sendMessage("Click detected: " + count++);
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-    }
-  }
+//  /**
+//   * A thread that listens to input envets and sends them to clients.
+//   * @author yingyin
+//   *
+//   */
+//  private class InputListener implements HandEventListener {
+//    private Connection connection;
+//    private int count = 0;
+//    
+//    public InputListener(Connection connection) {
+//      this.connection = connection;
+//    }
+//    
+//
+//    @Override
+//    public void gesturePerformed(GestureRecognizedEventArgs args) {
+//      try {
+//        connection.sendMessage("Click detected: " + count++);
+//      } catch (IOException e) {
+//        e.printStackTrace();
+//      }
+//    }
+//  }
   
   /**
    * This connector uses efficient NIO buffers with a non blocking threading 
@@ -73,7 +73,7 @@ public class InputServer extends Server {
    */
   private SelectChannelConnector connector;
   private WebSocketHandler wsHandler;
-  private HandTracker1 handTracker = new HandTracker1();
+//  private HandTracker1 handTracker = new HandTracker1();
   
   public InputServer(int port) {
     connector = new SelectChannelConnector();
@@ -89,7 +89,7 @@ public class InputServer extends Server {
       }
     };
     setHandler(wsHandler);
-    handTracker.start();
+//    handTracker.start();
   }
   
   public static void main(String... args) {

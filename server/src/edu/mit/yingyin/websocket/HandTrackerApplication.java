@@ -30,9 +30,6 @@ import javax.swing.JFrame;
 
 public class HandTrackerApplication {
 
-    /**
-	 * 
-	 */
 	public HandTracker viewer;
 	private boolean shouldRun = true;
 	private JFrame frame;
@@ -55,8 +52,7 @@ public class HandTrackerApplication {
 	});
   }
 
-  void run()
-  {
+  void run() {
     while(shouldRun) {
       viewer.updateDepth();
       viewer.repaint();
