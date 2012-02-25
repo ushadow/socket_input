@@ -5,6 +5,9 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.OpenNI.GestureRecognizedEventArgs;
+import org.OpenNI.IObservable;
+import org.OpenNI.IObserver;
+import org.OpenNI.StatusException;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.websocket.WebSocket;
@@ -22,13 +25,14 @@ public class InputServer extends Server {
   
   private class InputWebSocket implements WebSocket {
 
-//    private InputListener inputListener;
+    private InputListener inputListener;
     
     @Override
     public void onClose(int code, String message) {
       System.out.printf("%s#onClose %d %s\n", 
                          this.getClass().getSimpleName(), code, message);
-//      handTracker.removeListener(inputListener);
+      if (inputListener != null)
+        inputListener.deleteObservers();
     }
 
     /**
@@ -38,34 +42,44 @@ public class InputServer extends Server {
     public void onOpen(Connection connection) {
       System.out.printf("%s#onOpen %s\n",this.getClass().getSimpleName(),
                         connection);
-//      inputListener = new InputListener(connection);
-//      handTracker.addListener(inputListener);
+      inputListener = new InputListener(connection);
     }
   }
   
-//  /**
-//   * A thread that listens to input envets and sends them to clients.
-//   * @author yingyin
-//   *
-//   */
-//  private class InputListener implements HandEventListener {
-//    private Connection connection;
-//    private int count = 0;
-//    
-//    public InputListener(Connection connection) {
-//      this.connection = connection;
-//    }
-//    
-//
-//    @Override
-//    public void gesturePerformed(GestureRecognizedEventArgs args) {
-//      try {
-//        connection.sendMessage("Click detected: " + count++);
-//      } catch (IOException e) {
-//        e.printStackTrace();
-//      }
-//    }
-//  }
+  private class InputListener {
+    private Connection connection;
+    private GestureRecognizedObserver gestureRecogObserver = 
+        new GestureRecognizedObserver();
+    
+    public InputListener(Connection connection) {
+      this.connection = connection;
+      try {
+        trackerController.addObserver(gestureRecogObserver);
+      } catch (StatusException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
+    
+    public void deleteObservers() {
+      trackerController.deleteObserver(gestureRecogObserver);
+    }
+
+    private class GestureRecognizedObserver implements
+    IObserver<GestureRecognizedEventArgs> {
+
+      @Override
+      public void update(IObservable<GestureRecognizedEventArgs> observable,
+          GestureRecognizedEventArgs args) {
+        try {
+          connection.sendMessage("Gesture recognized:" + args.getGesture());
+        } catch (IOException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
+      }
+    }
+  }
   
   /**
    * This connector uses efficient NIO buffers with a non blocking threading 
@@ -73,9 +87,11 @@ public class InputServer extends Server {
    */
   private SelectChannelConnector connector;
   private WebSocketHandler wsHandler;
-//  private HandTracker1 handTracker = new HandTracker1();
+  private HandTrackerController trackerController;
   
-  public InputServer(int port) {
+  public InputServer(int port, HandTrackerController trackerController) {
+    this.trackerController = trackerController;
+    
     connector = new SelectChannelConnector();
     connector.setPort(port);
     
@@ -89,15 +105,17 @@ public class InputServer extends Server {
       }
     };
     setHandler(wsHandler);
-//    handTracker.start();
   }
   
   public static void main(String... args) {
     try {
       int port = 8081;
-      InputServer server = new InputServer(port);
+      HandTrackerController controller = new HandTrackerController();
+      InputServer server = new InputServer(port, controller);
+      controller.start();
       server.start();
       server.join();
+      controller.join();
     } catch (Exception e) {
       e.printStackTrace();
       System.exit(-1);

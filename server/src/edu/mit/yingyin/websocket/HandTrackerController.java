@@ -23,58 +23,59 @@ package edu.mit.yingyin.websocket;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
-import javax.swing.JFrame;
+import org.OpenNI.GestureRecognizedEventArgs;
+import org.OpenNI.IObserver;
+import org.OpenNI.StatusException;
 
-public class HandTrackerApplication {
+public class HandTrackerController extends Thread {
 
-	public HandTracker viewer;
+	private HandTracker tracker = new HandTracker();
 	private boolean shouldRun = true;
-	private JFrame frame;
+	private HandTrackerView view;
 
-  public HandTrackerApplication (JFrame frame) {
-  	this.frame = frame;
-  	frame.addKeyListener(new KeyListener()
-	{
-		@Override
-		public void keyTyped(KeyEvent arg0) {}
-		@Override
-		public void keyReleased(KeyEvent arg0) {}
-		@Override
-		public void keyPressed(KeyEvent arg0) {
-			if (arg0.getKeyCode() == KeyEvent.VK_ESCAPE)
-			{
-				shouldRun = false;
-			}
-		}
-	});
-  }
-
-  void run() {
-    while(shouldRun) {
-      viewer.updateDepth();
-      viewer.repaint();
-    }
-    viewer.release();
-    frame.dispose();
-  }
-
-  public static void main(String s[])
-  {
-      JFrame f = new JFrame("OpenNI Hand Tracker");
-      f.addWindowListener(new WindowAdapter() {
-          public void windowClosing(WindowEvent e) {System.exit(0);}
-      });
-      HandTrackerApplication app = new HandTrackerApplication(f);
-      
-      app.viewer = new HandTracker();
-      f.add("Center", app.viewer);
-      f.pack();
-      f.setVisible(true);
-      app.run();
-  }
-
+  public HandTrackerController () {
     
+  	view = new HandTrackerView(tracker);
+  	view.addKeyListener(new KeyListener() {
+  		@Override
+  		public void keyTyped(KeyEvent arg0) {}
+  		@Override
+  		public void keyReleased(KeyEvent arg0) {}
+  		@Override
+  		public void keyPressed(KeyEvent arg0) {
+  			if (arg0.getKeyCode() == KeyEvent.VK_ESCAPE) {
+  				shouldRun = false;
+  			}
+  		}
+  	});
+  	view.pack();
+  	view.setVisible(true);
+  }
+
+  @Override
+  public void run() {
+    while(shouldRun) {
+      tracker.updateDepth();
+      view.updateDepthImage();
+      view.repaint();
+    }
+    tracker.release();
+    view.dispose();
+  }
+  
+  public void addObserver(IObserver<GestureRecognizedEventArgs> observer) 
+      throws StatusException {
+    tracker.addObserver(observer);
+  }
+  
+  public void deleteObserver(IObserver<GestureRecognizedEventArgs> observer) {
+    tracker.deleteObserver(observer);
+  }
+
+  public static void main(String s[]) {
+    
+    HandTrackerController app = new HandTrackerController();
+    app.run();
+  }
 }

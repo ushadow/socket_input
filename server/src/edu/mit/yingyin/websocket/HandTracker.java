@@ -12,18 +12,6 @@
  ****************************************************************************/
 package edu.mit.yingyin.websocket;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.color.ColorSpace;
-import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.ComponentColorModel;
-import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferByte;
-import java.awt.image.Raster;
-import java.awt.image.WritableRaster;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
@@ -57,15 +45,14 @@ import org.OpenNI.StatusException;
 import org.OpenNI.UserEventArgs;
 import org.OpenNI.UserGenerator;
 
-public class HandTracker extends Component {
+public class HandTracker {
 
-  class GestureRecognizedObserver implements
+  private class GestureRecognizedObserver implements
       IObserver<GestureRecognizedEventArgs> {
 
     @Override
     public void update(IObservable<GestureRecognizedEventArgs> observable,
         GestureRecognizedEventArgs args) {
-      System.out.println("Gesture recognized:" + args.getGesture());
       try {
         handsGen.StartTracking(args.getEndPosition());
         gestureGen.removeGesture("Wave");
@@ -73,17 +60,15 @@ public class HandTracker extends Component {
         se.printStackTrace();
       }
     }
-
   }
 
-  class HandCreateEventObserver implements IObserver<ActiveHandEventArgs> {
+  private class HandCreateEventObserver implements
+      IObserver<ActiveHandEventArgs> {
 
     @Override
     public void update(IObservable<ActiveHandEventArgs> observable,
         ActiveHandEventArgs args) {
       Point3D pos = args.getPosition();
-      System.out.printf("New hand: %d @ (%f, %f, %f)\n", args.getId(),
-          pos.getX(), pos.getY(), pos.getZ());
       if (!history.containsKey(args.getId())) {
         ArrayList<Point3D> newList = new ArrayList<Point3D>();
         newList.add(pos);
@@ -92,7 +77,8 @@ public class HandTracker extends Component {
     }
   }
 
-  class HandUpdateEventObserver implements IObserver<ActiveHandEventArgs> {
+  private class HandUpdateEventObserver implements
+      IObserver<ActiveHandEventArgs> {
 
     @Override
     public void update(IObservable<ActiveHandEventArgs> observable,
@@ -105,8 +91,9 @@ public class HandTracker extends Component {
       }
     }
   }
-  
-  class HandDestroyEventObserver implements IObserver<InactiveHandEventArgs> {
+
+  private class HandDestroyEventObserver implements
+      IObserver<InactiveHandEventArgs> {
 
     @Override
     public void update(IObservable<InactiveHandEventArgs> observable,
@@ -123,10 +110,10 @@ public class HandTracker extends Component {
     }
   }
 
-  class NewUserObserver implements IObserver<UserEventArgs> {
+  private class NewUserObserver implements IObserver<UserEventArgs> {
     @Override
     public void update(IObservable<UserEventArgs> observable, 
-                       UserEventArgs args) {
+        UserEventArgs args) {
       System.out.println("New user " + args.getId());
       try {
         if (skeletonCap.needPoseForCalibration()) {
@@ -140,16 +127,16 @@ public class HandTracker extends Component {
     }
   }
 
-  class LostUserObserver implements IObserver<UserEventArgs> {
+  private class LostUserObserver implements IObserver<UserEventArgs> {
     @Override
     public void update(IObservable<UserEventArgs> observable, 
-                       UserEventArgs args) {
+        UserEventArgs args) {
       System.out.println("Lost user " + args.getId());
       joints.remove(args.getId());
     }
   }
 
-  class CalibrationCompleteObserver implements
+  private class CalibrationCompleteObserver implements
       IObserver<CalibrationProgressEventArgs> {
     @Override
     public void update(IObservable<CalibrationProgressEventArgs> observable,
@@ -173,7 +160,9 @@ public class HandTracker extends Component {
       }
     }
   }
-  class PoseDetectedObserver implements IObserver<PoseDetectionEventArgs> {
+
+  private class PoseDetectedObserver implements
+      IObserver<PoseDetectionEventArgs> {
     @Override
     public void update(IObservable<PoseDetectionEventArgs> observable,
         PoseDetectionEventArgs args) {
@@ -188,42 +177,31 @@ public class HandTracker extends Component {
     }
   }
 
-  private static final long serialVersionUID = 1L;
+  public DepthGenerator depthGen;
+  public UserGenerator userGen;
+  public SkeletonCapability skeletonCap;
+  public HashMap<Integer, ArrayList<Point3D>> history;
+  public String calibPose = null;
+
   private OutArg<ScriptNode> scriptNode;
   private Context context;
-  private DepthGenerator depthGen;
-  private UserGenerator userGen;
-  private SkeletonCapability skeletonCap;
   private PoseDetectionCapability poseDetectionCap;
-  private byte[] imgbytes;
-  private float histogram[];
-  private String calibPose = null;
-  private HashMap<Integer, HashMap<SkeletonJoint, SkeletonJointPosition>> 
-          joints;
+  private float[] histogram;
+  private HashMap<Integer, HashMap<SkeletonJoint, SkeletonJointPosition>> joints;
 
-  private boolean drawBackground = true;
-  private boolean drawPixels = true;
-  private boolean drawSkeleton = true;
-  private boolean printID = true;
-  private boolean printState = true;
-  
   private GestureGenerator gestureGen;
   private HandsGenerator handsGen;
   private ByteBuffer sceneBuffer, depthBuffer;
   private int depthByteBufferSize, sceneByteBufferSize;
   private DepthMetaData depthMD;
   private SceneMetaData sceneMD;
-  private HashMap<Integer, ArrayList<Point3D>> history;
   private static final int HISTORY_SIZE = 10;
-  
-  private BufferedImage bimg;
   private int width, height;
-  
+  private ShortBuffer depth, scene;
 
   private final String SAMPLE_XML_FILE = "server/config/config.xml";
 
   public HandTracker() {
-
     try {
       scriptNode = new OutArg<ScriptNode>();
       context = Context.createFromXmlFile(SAMPLE_XML_FILE, scriptNode);
@@ -239,8 +217,6 @@ public class HandTracker extends Component {
       depthBuffer = ByteBuffer.allocateDirect(depthByteBufferSize);
       depthBuffer.order(ByteOrder.LITTLE_ENDIAN);
 
-      imgbytes = new byte[width * height * 3];
-
       userGen = UserGenerator.create(context);
       skeletonCap = userGen.getSkeletonCapability();
       poseDetectionCap = userGen.getPoseDetectionCapability();
@@ -253,8 +229,7 @@ public class HandTracker extends Component {
           new PoseDetectedObserver());
 
       calibPose = skeletonCap.getSkeletonCalibrationPose();
-      joints = new HashMap<Integer, HashMap<SkeletonJoint, 
-          SkeletonJointPosition>>();
+      joints = new HashMap<Integer, HashMap<SkeletonJoint, SkeletonJointPosition>>();
 
       skeletonCap.setSkeletonProfile(SkeletonProfile.ALL);
 
@@ -265,11 +240,10 @@ public class HandTracker extends Component {
       handsGen = HandsGenerator.create(context);
       handsGen.getHandCreateEvent().addObserver(new HandCreateEventObserver());
       handsGen.getHandUpdateEvent().addObserver(new HandUpdateEventObserver());
-      handsGen.getHandDestroyEvent().addObserver(
-          new HandDestroyEventObserver());
-      
+      handsGen.getHandDestroyEvent().addObserver(new HandDestroyEventObserver());
+
       history = new HashMap<Integer, ArrayList<Point3D>>();
-      
+
       sceneMD = userGen.getUserPixels(0);
       int sceneWidth = sceneMD.getFullXRes();
       int sceneHeight = sceneMD.getFullYRes();
@@ -286,6 +260,83 @@ public class HandTracker extends Component {
     }
   }
 
+  public int depthHeight() {
+    return height;
+  }
+
+  public int depthWidth() {
+    return width;
+  }
+
+  public void addObserver(
+      IObserver<GestureRecognizedEventArgs> observer) throws StatusException {
+    gestureGen.getGestureRecognizedEvent().addObserver(observer);
+  }
+  
+  public void deleteObserver(
+      IObserver<GestureRecognizedEventArgs> observer) {
+    gestureGen.getGestureRecognizedEvent().deleteObserver(observer);
+  }
+
+
+  public void updateDepth() {
+    try {
+      context.waitAnyUpdateAll();
+
+      sceneMD.getData().copyToBuffer(sceneBuffer, sceneByteBufferSize);
+      scene = sceneBuffer.asShortBuffer();
+
+      depthMD.getData().copyToBuffer(depthBuffer, depthByteBufferSize);
+      depth = depthBuffer.asShortBuffer();
+
+      calcHist(depth);
+
+    } catch (GeneralException e) {
+      e.printStackTrace();
+    }
+  }
+
+  public float[] histogram() {
+    return histogram;
+  }
+
+  public ShortBuffer depthBuffer() {
+    return depth;
+  }
+
+  public ShortBuffer sceneBuffer() {
+    return scene;
+  }
+
+  public HashMap<Integer, HashMap<SkeletonJoint, SkeletonJointPosition>> getJoints(
+      int user) throws StatusException {
+    getJoint(user, SkeletonJoint.HEAD);
+    getJoint(user, SkeletonJoint.NECK);
+
+    getJoint(user, SkeletonJoint.LEFT_SHOULDER);
+    getJoint(user, SkeletonJoint.LEFT_ELBOW);
+    getJoint(user, SkeletonJoint.LEFT_HAND);
+
+    getJoint(user, SkeletonJoint.RIGHT_SHOULDER);
+    getJoint(user, SkeletonJoint.RIGHT_ELBOW);
+    getJoint(user, SkeletonJoint.RIGHT_HAND);
+
+    getJoint(user, SkeletonJoint.TORSO);
+
+    getJoint(user, SkeletonJoint.LEFT_HIP);
+    getJoint(user, SkeletonJoint.LEFT_KNEE);
+    getJoint(user, SkeletonJoint.LEFT_FOOT);
+
+    getJoint(user, SkeletonJoint.RIGHT_HIP);
+    getJoint(user, SkeletonJoint.RIGHT_KNEE);
+    getJoint(user, SkeletonJoint.RIGHT_FOOT);
+    return joints;
+  }
+
+  public void release() {
+    context.release();
+  }
+  
   private void calcHist(ShortBuffer depth) {
     // reset
     for (int i = 0; i < histogram.length; ++i)
@@ -313,57 +364,7 @@ public class HandTracker extends Component {
     }
   }
 
-  void updateDepth() {
-    try {
-      context.waitAnyUpdateAll();
-
-      sceneMD.getData().copyToBuffer(sceneBuffer, sceneByteBufferSize);
-      ShortBuffer scene = sceneBuffer.asShortBuffer();
-
-      depthMD.getData().copyToBuffer(depthBuffer, depthByteBufferSize);
-      ShortBuffer depth = depthBuffer.asShortBuffer();
-
-      calcHist(depth);
-      depth.rewind();
-
-      while (depth.remaining() > 0) {
-        int pos = depth.position();
-        short pixel = depth.get();
-        short user = scene.get();
-
-        imgbytes[3 * pos] = 0;
-        imgbytes[3 * pos + 1] = 0;
-        imgbytes[3 * pos + 2] = 0;
-
-        if (drawBackground || pixel != 0) {
-          int colorID = user % (colors.length - 1);
-          if (user == 0) {
-            colorID = colors.length - 1;
-          }
-          if (pixel != 0) {
-            float histValue = histogram[pixel];
-            imgbytes[3 * pos] = (byte)(histValue * colors[colorID].getRed());
-            imgbytes[3 * pos + 1] = (byte)(histValue * colors[colorID].
-                                           getGreen());
-            imgbytes[3 * pos + 2] = (byte)(histValue * colors[colorID].
-                                           getBlue());
-          }
-        }
-      }
-    } catch (GeneralException e) {
-      e.printStackTrace();
-    }
-  }
-
-  public Dimension getPreferredSize() {
-    return new Dimension(width, height);
-  }
-
-  Color colors[] = {
-      Color.RED, Color.BLUE, Color.CYAN, Color.GREEN, Color.MAGENTA,
-      Color.PINK, Color.YELLOW, Color.WHITE};
-
-  public void getJoint(int user, SkeletonJoint joint) throws StatusException {
+  private void getJoint(int user, SkeletonJoint joint) throws StatusException {
     SkeletonJointPosition pos = skeletonCap.getSkeletonJointPosition(user,
         joint);
     if (pos.getPosition().getZ() != 0) {
@@ -375,145 +376,5 @@ public class HandTracker extends Component {
     } else {
       joints.get(user).put(joint, new SkeletonJointPosition(new Point3D(), 0));
     }
-  }
-
-  public void getJoints(int user) throws StatusException {
-    getJoint(user, SkeletonJoint.HEAD);
-    getJoint(user, SkeletonJoint.NECK);
-
-    getJoint(user, SkeletonJoint.LEFT_SHOULDER);
-    getJoint(user, SkeletonJoint.LEFT_ELBOW);
-    getJoint(user, SkeletonJoint.LEFT_HAND);
-
-    getJoint(user, SkeletonJoint.RIGHT_SHOULDER);
-    getJoint(user, SkeletonJoint.RIGHT_ELBOW);
-    getJoint(user, SkeletonJoint.RIGHT_HAND);
-
-    getJoint(user, SkeletonJoint.TORSO);
-
-    getJoint(user, SkeletonJoint.LEFT_HIP);
-    getJoint(user, SkeletonJoint.LEFT_KNEE);
-    getJoint(user, SkeletonJoint.LEFT_FOOT);
-
-    getJoint(user, SkeletonJoint.RIGHT_HIP);
-    getJoint(user, SkeletonJoint.RIGHT_KNEE);
-    getJoint(user, SkeletonJoint.RIGHT_FOOT);
-
-  }
-
-  void drawLine(Graphics g,
-      HashMap<SkeletonJoint, SkeletonJointPosition> jointHash,
-      SkeletonJoint joint1, SkeletonJoint joint2) {
-    Point3D pos1 = jointHash.get(joint1).getPosition();
-    Point3D pos2 = jointHash.get(joint2).getPosition();
-
-    if (jointHash.get(joint1).getConfidence() == 0
-        || jointHash.get(joint2).getConfidence() == 0)
-      return;
-
-    g.drawLine((int) pos1.getX(), (int) pos1.getY(), (int) pos2.getX(),
-        (int) pos2.getY());
-  }
-
-  public void drawSkeleton(Graphics g, int user) throws StatusException {
-    getJoints(user);
-    HashMap<SkeletonJoint, SkeletonJointPosition> dict = joints.get(new Integer(
-        user));
-
-    drawLine(g, dict, SkeletonJoint.HEAD, SkeletonJoint.NECK);
-
-    drawLine(g, dict, SkeletonJoint.LEFT_SHOULDER, SkeletonJoint.TORSO);
-    drawLine(g, dict, SkeletonJoint.RIGHT_SHOULDER, SkeletonJoint.TORSO);
-
-    drawLine(g, dict, SkeletonJoint.NECK, SkeletonJoint.LEFT_SHOULDER);
-    drawLine(g, dict, SkeletonJoint.LEFT_SHOULDER, SkeletonJoint.LEFT_ELBOW);
-    drawLine(g, dict, SkeletonJoint.LEFT_ELBOW, SkeletonJoint.LEFT_HAND);
-
-    drawLine(g, dict, SkeletonJoint.NECK, SkeletonJoint.RIGHT_SHOULDER);
-    drawLine(g, dict, SkeletonJoint.RIGHT_SHOULDER, SkeletonJoint.RIGHT_ELBOW);
-    drawLine(g, dict, SkeletonJoint.RIGHT_ELBOW, SkeletonJoint.RIGHT_HAND);
-
-    drawLine(g, dict, SkeletonJoint.LEFT_HIP, SkeletonJoint.TORSO);
-    drawLine(g, dict, SkeletonJoint.RIGHT_HIP, SkeletonJoint.TORSO);
-    drawLine(g, dict, SkeletonJoint.LEFT_HIP, SkeletonJoint.RIGHT_HIP);
-
-    drawLine(g, dict, SkeletonJoint.LEFT_HIP, SkeletonJoint.LEFT_KNEE);
-    drawLine(g, dict, SkeletonJoint.LEFT_KNEE, SkeletonJoint.LEFT_FOOT);
-
-    drawLine(g, dict, SkeletonJoint.RIGHT_HIP, SkeletonJoint.RIGHT_KNEE);
-    drawLine(g, dict, SkeletonJoint.RIGHT_KNEE, SkeletonJoint.RIGHT_FOOT);
-
-  }
-
-  public void paint(Graphics g) {
-    if (drawPixels) {
-      DataBufferByte dataBuffer = new DataBufferByte(imgbytes, width * height
-          * 3);
-
-      WritableRaster raster = Raster.createInterleavedRaster(dataBuffer, width,
-          height, width * 3, 3, new int[]{0, 1, 2}, null);
-
-      ColorModel colorModel = new ComponentColorModel(
-          ColorSpace.getInstance(ColorSpace.CS_sRGB), new int[]{8, 8, 8},
-          false, false, ComponentColorModel.OPAQUE, DataBuffer.TYPE_BYTE);
-
-      bimg = new BufferedImage(colorModel, raster, false, null);
-
-      g.drawImage(bimg, 0, 0, null);
-    }
-    try {
-      int[] users = userGen.getUsers();
-      for (int i = 0; i < users.length; ++i) {
-        Color c = colors[users[i] % colors.length];
-        c = new Color(255 - c.getRed(), 255 - c.getGreen(), 255 - c.getBlue());
-
-        g.setColor(c);
-
-        if (drawSkeleton && skeletonCap.isSkeletonTracking(users[i]))
-          drawSkeleton(g, users[i]);
-
-        if (printID) {
-          Point3D com = depthGen.convertRealWorldToProjective(userGen.
-                        getUserCoM(users[i]));
-          String label = null;
-          if (!printState) {
-            label = new String("" + users[i]);
-          } else if (skeletonCap.isSkeletonTracking(users[i])) {
-            // Tracking
-            label = new String(users[i] + " - Tracking");
-          } else if (skeletonCap.isSkeletonCalibrating(users[i])) {
-            // Calibrating
-            label = new String(users[i] + " - Calibrating");
-          } else {
-            // Nothing
-            label = new String(users[i] + " - Looking for pose (" + calibPose
-                + ")");
-          }
-
-          g.drawString(label, (int) com.getX(), (int) com.getY());
-        }
-      }
-      for (Integer id: history.keySet()) {
-        ArrayList<Point3D> points = history.get(id);
-        g.setColor(colors[id % colors.length]);
-        int[] xPoints = new int[points.size()];
-        int[] yPoints = new int[points.size()];
-        for (int i = 0; i < points.size(); i++) {
-          Point3D proj = depthGen.convertRealWorldToProjective(points.get(i));
-          xPoints[i] = (int)proj.getX();
-          yPoints[i] = (int)proj.getY();
-        }
-        g.drawPolyline(xPoints, yPoints, points.size());
-        Point3D proj = depthGen.convertRealWorldToProjective(
-            points.get(points.size() - 1));
-        g.drawOval((int)proj.getX(), (int)proj.getY(), 5, 5);
-      }
-    } catch (StatusException e) {
-      e.printStackTrace();
-    }
-  }
-
-  public void release() {
-    context.release();
   }
 }
