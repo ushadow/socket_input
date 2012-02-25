@@ -180,6 +180,7 @@ public class HandTracker {
   public DepthGenerator depthGen;
   public UserGenerator userGen;
   public SkeletonCapability skeletonCap;
+  // TODO(ushadow): add synchronization.
   public HashMap<Integer, ArrayList<Point3D>> history;
   public String calibPose = null;
 
@@ -334,7 +335,13 @@ public class HandTracker {
   }
 
   public void release() {
+    System.out.println("HandTracker released.");
     context.release();
+  }
+  
+  public Point3D convertRealWorldToProjective(Point3D p) 
+      throws StatusException {
+    return depthGen.convertRealWorldToProjective(p);
   }
   
   private void calcHist(ShortBuffer depth) {

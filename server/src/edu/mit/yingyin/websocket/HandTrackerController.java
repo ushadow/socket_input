@@ -24,18 +24,14 @@ package edu.mit.yingyin.websocket;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
-import org.OpenNI.GestureRecognizedEventArgs;
-import org.OpenNI.IObserver;
-import org.OpenNI.StatusException;
-
 public class HandTrackerController extends Thread {
 
-	private HandTracker tracker = new HandTracker();
+	private HandTracker tracker;
 	private boolean shouldRun = true;
 	private HandTrackerView view;
 
-  public HandTrackerController () {
-    
+  public HandTrackerController (HandTracker tracker) {
+    this.tracker = tracker;
   	view = new HandTrackerView(tracker);
   	view.addKeyListener(new KeyListener() {
   		@Override
@@ -64,18 +60,9 @@ public class HandTrackerController extends Thread {
     view.dispose();
   }
   
-  public void addObserver(IObserver<GestureRecognizedEventArgs> observer) 
-      throws StatusException {
-    tracker.addObserver(observer);
-  }
-  
-  public void deleteObserver(IObserver<GestureRecognizedEventArgs> observer) {
-    tracker.deleteObserver(observer);
-  }
-
   public static void main(String s[]) {
-    
-    HandTrackerController app = new HandTrackerController();
+    HandTracker tracker = new HandTracker();
+    HandTrackerController app = new HandTrackerController(tracker);
     app.run();
   }
 }

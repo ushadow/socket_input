@@ -4,9 +4,11 @@ import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.OpenNI.ActiveHandEventArgs;
 import org.OpenNI.GestureRecognizedEventArgs;
 import org.OpenNI.IObservable;
 import org.OpenNI.IObserver;
+import org.OpenNI.Point3D;
 import org.OpenNI.StatusException;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
@@ -54,7 +56,7 @@ public class InputServer extends Server {
     public InputListener(Connection connection) {
       this.connection = connection;
       try {
-        trackerController.addObserver(gestureRecogObserver);
+        tracker.addObserver(gestureRecogObserver);
       } catch (StatusException e) {
         // TODO Auto-generated catch block
         e.printStackTrace();
@@ -62,7 +64,7 @@ public class InputServer extends Server {
     }
     
     public void deleteObservers() {
-      trackerController.deleteObserver(gestureRecogObserver);
+      tracker.deleteObserver(gestureRecogObserver);
     }
 
     private class GestureRecognizedObserver implements
@@ -79,6 +81,18 @@ public class InputServer extends Server {
         }
       }
     }
+    
+    private class HandCreatEventObserver implements 
+        IObserver<ActiveHandEventArgs> {
+
+      @Override
+      public void update(IObservable<ActiveHandEventArgs> arg0,
+          ActiveHandEventArgs args) {
+        Point3D pos = args.getPosition();
+        
+      }
+      
+    }
   }
   
   /**
@@ -87,10 +101,10 @@ public class InputServer extends Server {
    */
   private SelectChannelConnector connector;
   private WebSocketHandler wsHandler;
-  private HandTrackerController trackerController;
+  private HandTracker tracker;
   
-  public InputServer(int port, HandTrackerController trackerController) {
-    this.trackerController = trackerController;
+  public InputServer(int port, HandTracker tracker) {
+    this.tracker = tracker;
     
     connector = new SelectChannelConnector();
     connector.setPort(port);
@@ -110,8 +124,9 @@ public class InputServer extends Server {
   public static void main(String... args) {
     try {
       int port = 8081;
-      HandTrackerController controller = new HandTrackerController();
-      InputServer server = new InputServer(port, controller);
+      HandTracker tracker = new HandTracker();
+      HandTrackerController controller = new HandTrackerController(tracker);
+      InputServer server = new InputServer(port, tracker);
       controller.start();
       server.start();
       server.join();

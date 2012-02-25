@@ -62,7 +62,7 @@ public class HandTrackerView extends JFrame {
             drawSkeleton(g, users[i]);
   
           if (printID) {
-            Point3D com = tracker.depthGen.convertRealWorldToProjective(
+            Point3D com = tracker.convertRealWorldToProjective(
                 tracker.userGen.getUserCoM(users[i]));
             String label = null;
             if (!printState) {
@@ -88,13 +88,13 @@ public class HandTrackerView extends JFrame {
           int[] xPoints = new int[points.size()];
           int[] yPoints = new int[points.size()];
           for (int i = 0; i < points.size(); i++) {
-            Point3D proj = tracker.depthGen.convertRealWorldToProjective(
+            Point3D proj = tracker.convertRealWorldToProjective(
                 points.get(i));
             xPoints[i] = (int)proj.getX();
             yPoints[i] = (int)proj.getY();
           }
           g.drawPolyline(xPoints, yPoints, points.size());
-          Point3D proj = tracker.depthGen.convertRealWorldToProjective(
+          Point3D proj = tracker.convertRealWorldToProjective(
               points.get(points.size() - 1));
           g.drawOval((int)proj.getX(), (int)proj.getY(), 5, 5);
         }
