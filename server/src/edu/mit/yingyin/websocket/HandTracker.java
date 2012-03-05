@@ -269,14 +269,29 @@ public class HandTracker {
     return width;
   }
 
-  public void addObserver(
+  public void addGestureRecognizedEventObserver(
       IObserver<GestureRecognizedEventArgs> observer) throws StatusException {
     gestureGen.getGestureRecognizedEvent().addObserver(observer);
   }
   
-  public void deleteObserver(
+  public void addHandCreateEventObserver(
+      IObserver<ActiveHandEventArgs> observer) throws StatusException {
+    handsGen.getHandCreateEvent().addObserver(observer);
+  }
+  
+  public void addHandUpdateEventObserver(
+      IObserver<ActiveHandEventArgs> observer) throws StatusException {
+    handsGen.getHandUpdateEvent().addObserver(observer);
+  }
+  
+  public void deleteGestureRecognizedEventObserver(
       IObserver<GestureRecognizedEventArgs> observer) {
     gestureGen.getGestureRecognizedEvent().deleteObserver(observer);
+  }
+  
+  public void deleteHandCreateEventObserver(
+      IObserver<ActiveHandEventArgs> observer) {
+    handsGen.getHandCreateEvent().deleteObserver(observer);
   }
 
 
