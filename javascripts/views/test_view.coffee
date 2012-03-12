@@ -7,9 +7,8 @@ class TestView
     @$button = $('button')
     @$button.click => @onButtonClick()
     @canvas = document.getElementById 'canvas'
-    @canvasHeight = @canvas.offsetHeight
-    @canvasWidth = @canvas.offsetWidth
-    console.log "#{@canvasHeight}, #{@canvasWidth}"
+    @canvasHeight = @canvas.clientHeight
+    @canvasWidth = @canvas.clientWidth
     
   showInfo: (message) ->
     @$status.text message
