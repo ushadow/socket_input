@@ -4,8 +4,8 @@ class TestController
     view.onDisconnect = => @disconnect()
     @hand = {x: 0, y: 0}
     
-    draw = => @view.drawRect @hand.x @hand.y
-    setInterval draw 20
+    draw = => @view.drawRect @hand.x, @hand.y
+    setInterval draw, 100
     
   connect: ->
     @view.showInfo 'Connecting'
@@ -29,9 +29,11 @@ class TestController
     @view.showInfo "WebSocket Error: #{errorMessage}"
     
   onMessage: (data) ->
-    @view.showInfo "Server: #{data}"
     dataArray = data.split ','
     if dataArray[0] is 'hand_created'
-      @hand.x = parseInt(dataArray[1]) + 320
-      @hand.y = parseInt(dataArray[2]) + 240
-      
+      @hand.x = parseInt(dataArray[1])
+      @hand.y = parseInt(dataArray[2])
+      status = "x = #{@hand.x}, y = #{@hand.y}"
+    else
+      status = "Server: #{data}"
+    @view.showInfo status

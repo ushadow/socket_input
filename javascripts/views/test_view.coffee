@@ -7,6 +7,9 @@ class TestView
     @$button = $('button')
     @$button.click => @onButtonClick()
     @canvas = document.getElementById 'canvas'
+    @canvasHeight = @canvas.offsetHeight
+    @canvasWidth = @canvas.offsetWidth
+    console.log "#{@canvasHeight}, #{@canvasWidth}"
     
   showInfo: (message) ->
     @$status.text message
@@ -16,8 +19,9 @@ class TestView
       when 'Disconnected'
         @$button.html 'Connect'
         
-  drawRec: (x, y) ->
+  drawRect: (x, y) ->
     context = @canvas.getContext '2d'
+    context.clearRect 0, 0, @canvasWidth, @canvasHeight
     context.fillStyle = '#ff0000'
     context.fillRect x, y, 10, 10
     

@@ -1,7 +1,6 @@
 package edu.mit.yingyin.websocket;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -16,8 +15,6 @@ import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.jetty.websocket.WebSocket.Connection;
 import org.eclipse.jetty.websocket.WebSocketHandler;
-
-//import edu.mit.yingyin.websocket.HandTracker.HandEventListener;
 
 /**
  * A WebSocket server that sends input events to clients.
@@ -54,7 +51,6 @@ public class InputServer extends Server {
     private GestureObserver gestureRecogObserver = new GestureObserver();
     private HandCreateObserver handCreateObserver = new HandCreateObserver();
     private HandUpdateObserver handUpdateObserer = new HandUpdateObserver();
-    
     
     public InputListener(Connection connection) {
       this.connection = connection;
@@ -95,12 +91,16 @@ public class InputServer extends Server {
       public void update(IObservable<ActiveHandEventArgs> observable,
           ActiveHandEventArgs args) {
         Point3D pos = args.getPosition();
-        String message = String.format("hand_created,%d,%d,%d", (int)pos.getX(), 
-            (int)pos.getY(), (int)pos.getZ());
         try {
+          pos = tracker.convertRealWorldToProjective(pos);
+          String message = String.format("hand_created,%d,%d,%d", 
+              (int)pos.getX(), (int)pos.getY(), (int)pos.getZ());
           connection.sendMessage(message);
         } catch (IOException ioe) {
           ioe.printStackTrace();
+        } catch (StatusException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
         }
       }
     }
@@ -113,17 +113,20 @@ public class InputServer extends Server {
           ActiveHandEventArgs args) {
         
         Point3D pos = args.getPosition();
-        String message = String.format("hand_created,%d,%d,%d", (int)pos.getX(), 
-            (int)pos.getY(), (int)pos.getZ());
         try {  
+          pos = tracker.convertRealWorldToProjective(pos);
+          String message = String.format("hand_created,%d,%d,%d", 
+              (int)pos.getX(), (int)pos.getY(), (int)pos.getZ());
           connection.sendMessage(message);
         } catch (IOException ioe) {
           ioe.printStackTrace();
+        } catch (StatusException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
         }
       }
     }
   }
-  
   
   /**
    * This connector uses efficient NIO buffers with a non blocking threading 
@@ -141,7 +144,6 @@ public class InputServer extends Server {
     
     addConnector(connector);
     wsHandler = new WebSocketHandler() {
-      
       @Override
       public WebSocket doWebSocketConnect(HttpServletRequest request, 
                                           String protocol) {

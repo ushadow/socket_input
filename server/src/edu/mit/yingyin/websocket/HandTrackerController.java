@@ -42,6 +42,7 @@ public class HandTrackerController extends Thread {
   		public void keyPressed(KeyEvent arg0) {
   			if (arg0.getKeyCode() == KeyEvent.VK_ESCAPE) {
   				shouldRun = false;
+  				System.exit(0);
   			}
   		}
   	});
