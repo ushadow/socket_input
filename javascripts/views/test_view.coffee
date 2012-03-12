@@ -25,7 +25,7 @@ class TestView
     context.fillRect x, y, 10, 10
     
   onButtonClick: ->
-    if @$button.html() == 'Connect'
+    if @$button.html() is 'Connect'
       @onConnect()
     else
       @onDisconnect()
