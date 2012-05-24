@@ -24,14 +24,24 @@ package edu.mit.yingyin.websocket;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
+import org.OpenNI.ActiveHandEventArgs;
+import org.OpenNI.GestureRecognizedEventArgs;
+import org.OpenNI.IObserver;
+import org.OpenNI.Point3D;
+import org.OpenNI.StatusException;
+
+/**
+ * A thread that controls the interaction with the <code>HandTracker</code>.
+ * @author yingyin
+ *
+ */
 public class HandTrackerController extends Thread {
 
-	private HandTracker tracker;
+	private HandTracker tracker = new HandTracker();
 	private boolean shouldRun = true;
 	private HandTrackerView view;
 
-  public HandTrackerController (HandTracker tracker) {
-    this.tracker = tracker;
+  public HandTrackerController () {
   	view = new HandTrackerView(tracker);
   	view.addKeyListener(new KeyListener() {
   		@Override
@@ -61,9 +71,38 @@ public class HandTrackerController extends Thread {
     view.dispose();
   }
   
+  public void addGestureRecognizedEventObserver(
+      IObserver<GestureRecognizedEventArgs> observer) throws StatusException {
+    tracker.addGestureRecognizedEventObserver(observer);
+  }
+  
+  public void addHandCreateEventObserver(
+      IObserver<ActiveHandEventArgs> observer) throws StatusException {
+    tracker.addHandCreateEventObserver(observer);
+  }
+  
+  public void addHandUpdateEventObserver(
+      IObserver<ActiveHandEventArgs> observer) throws StatusException {
+    tracker.addHandUpdateEventObserver(observer);
+  }
+  
+  public void deleteGestureRecognizedEventObserver(
+      IObserver<GestureRecognizedEventArgs> observer) {
+    tracker.deleteGestureRecognizedEventObserver(observer);
+  }
+  
+  public void deleteHandCreateEventObserver(
+      IObserver<ActiveHandEventArgs> observer) {
+    tracker.deleteHandCreateEventObserver(observer);
+  }
+
+  public Point3D convertRealWorldToProjective(Point3D p) 
+      throws StatusException {
+    return tracker.convertRealWorldToProjective(p);
+  }
+  
   public static void main(String s[]) {
-    HandTracker tracker = new HandTracker();
-    HandTrackerController app = new HandTrackerController(tracker);
+    HandTrackerController app = new HandTrackerController();
     app.run();
   }
 }
