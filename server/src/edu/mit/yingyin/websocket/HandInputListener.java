@@ -10,6 +10,8 @@ import org.OpenNI.Point3D;
 import org.OpenNI.StatusException;
 import org.eclipse.jetty.websocket.WebSocket.Connection;
 
+import edu.mit.yingyin.gesture.HandTrackerController;
+
 public class HandInputListener implements IInputListener {
   private Connection connection;
   private GestureObserver gestureRecogObserver = new GestureObserver();
@@ -45,7 +47,8 @@ public class HandInputListener implements IInputListener {
     public void update(IObservable<GestureRecognizedEventArgs> observable,
         GestureRecognizedEventArgs args) {
       try {
-        connection.sendMessage("Gesture recognized:" + args.getGesture());
+        connection.sendMessage(String.format("[{\"gesture\": \"%s\"}]", 
+            args.getGesture()));
       } catch (IOException e) {
         // TODO Auto-generated catch block
         e.printStackTrace();
@@ -62,8 +65,9 @@ public class HandInputListener implements IInputListener {
       Point3D pos = args.getPosition();
       try {
         pos = controller.convertRealWorldToProjective(pos);
-        String message = String.format("hand_created,%d,%d,%d", 
-            (int)pos.getX(), (int)pos.getY(), (int)pos.getZ());
+        String message = String.format(
+            "[{\"posImage\": {\"x\": %d, \"y\": %d, \"z\": %d}}]", 
+            (int) pos.getX(), (int) pos.getY(), (int) pos.getZ());
         connection.sendMessage(message);
       } catch (IOException ioe) {
         ioe.printStackTrace();
@@ -84,7 +88,8 @@ public class HandInputListener implements IInputListener {
       Point3D pos = args.getPosition();
       try {  
         pos = controller.convertRealWorldToProjective(pos);
-        String message = String.format("hand_created,%d,%d,%d", 
+        String message = String.format(
+            "[{\"posImage\": {\"x\": %d, \"y\": %d, \"z\": %d}}]", 
             (int)pos.getX(), (int)pos.getY(), (int)pos.getZ());
         connection.sendMessage(message);
       } catch (IOException ioe) {

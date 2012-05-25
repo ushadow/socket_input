@@ -1,4 +1,4 @@
-package edu.mit.yingyin.websocket;
+package edu.mit.yingyin.gesture;
 
 import java.awt.Color;
 import java.awt.Dimension;

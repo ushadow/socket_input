@@ -9,6 +9,8 @@ import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.jetty.websocket.WebSocketHandler;
 
+import edu.mit.yingyin.gesture.HandTrackerController;
+
 /**
  * A WebSocket server that listens to input events and sends them to clients.
  * @author yingyin
@@ -22,8 +24,8 @@ public class InputServer extends Server {
 
     @Override
     public void onClose(int code, String message) {
-      logger.info(String.format("Connection closed with code: %d, message: %s\n", 
-          code, message));
+      logger.info(String.format(
+          "Connection closed with code: %d, message: %s\n", code, message));
       if (inputListener != null)
         inputListener.stopListening();
     }

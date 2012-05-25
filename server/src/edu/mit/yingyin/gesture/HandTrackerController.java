@@ -19,7 +19,7 @@
 *  along with OpenNI. If not, see <http://www.gnu.org/licenses/>.           *
 *                                                                           *
 ****************************************************************************/
-package edu.mit.yingyin.websocket;
+package edu.mit.yingyin.gesture;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;

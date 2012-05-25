@@ -10,7 +10,7 @@
  * a copy of the GNU Lesser General Public License * along with OpenNI. If not,
  * see <http://www.gnu.org/licenses/>. * *
  ****************************************************************************/
-package edu.mit.yingyin.websocket;
+package edu.mit.yingyin.gesture;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

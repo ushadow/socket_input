@@ -30,10 +30,9 @@ class TestController
     
   onMessage: (data) ->
     dataArray = data.split ','
-    if dataArray[0] is 'hand_created'
-      @hand.x = parseInt(dataArray[1])
-      @hand.y = parseInt(dataArray[2])
-      status = "x = #{@hand.x}, y = #{@hand.y}"
-    else
-      status = "Server: #{data}"
+    status = "Server: #{data}"
+    json = JSON.parse data
+    if json[0].posImage?
+      @hand.x = parseInt(json[0].posImage.x)
+      @hand.y = parseInt(json[0].posImage.y)
     @view.showInfo status
