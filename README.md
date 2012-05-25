@@ -17,8 +17,12 @@ jar files to server/lib
     
 * Install [OpenNI unstable branch](https://github.com/OpenNI/OpenNI/tree/unstable)
 
+	This will install org.OpenNI.jar to /usr/share/java.
+
+### Kinect driver
 * Install [avin2/SensorKinect unstable branch](https://github.com/avin2/SensorKinect)
 
+### OpenNI middleware
 * Install NITE Dev Linux x64 v1.5.2.21
 
 # Setup
