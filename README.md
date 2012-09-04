@@ -29,7 +29,7 @@ jar files to server/lib
 ### OpenNI middleware
 * Install NITE Dev Linux x64 v1.5.2.21 (unstable version)
 
-	I removed the Features_1_5_2 folder so that libXnVFeatures_1_5_2.so is not installed. With is librarcy installed,
+	I removed the Features_1_5_2 folder so that libXnVFeatures_1_5_2.so is not installed. With is library installed,
 	the sample program org.OpenNI.Samples.UserTracker crashes. The C++ version of the user tracking program runs
 	fine though. I reported this bug in the [OpneNI Google group] (https://groups.google.com/d/msg/openni-dev/259RT7dVSy4/jK0YSikT5NEJ).
 
