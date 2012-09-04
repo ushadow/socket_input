@@ -1,4 +1,4 @@
-Experiment with browser input from Kinect using websocket.
+An self-contained demostration of using hand as browser input using Kinect and websocket.
 
 # Development Environment
 The code is developed and tested on Ubuntu 11.10.
@@ -17,6 +17,7 @@ jar files to server/lib
     * jetty-server-8.1.5.v20120716.jar
     * jetty-util-8.1.5.v20120716.jar
     * jetty-websocket-8.1.5.v20120716.jar
+    * jetty-continuation-8.1.5.v20120716.jar
     * servlet-api-3.0.jar
     
 * Install [OpenNI unstable branch](https://github.com/OpenNI/OpenNI/tree/unstable)
