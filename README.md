@@ -1,4 +1,4 @@
-An self-contained demostration of using hand as browser input using Kinect and websocket.
+A self-contained demostration of using hand as browser input using Kinect and websocket.
 
 # Development Environment
 The code is developed and tested on Ubuntu 11.10.
