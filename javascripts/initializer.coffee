@@ -2,6 +2,6 @@
 $ ->
   view = new TestView()
   controller = new TestController view, 'ws://localhost:8081'
-  
-  # Debugging convenience.  
-  window.controller = controller    
+
+  # Debugging convenience.
+  window.controller = controller
