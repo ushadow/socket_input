@@ -44,3 +44,8 @@ development:
 		bundle exec shotgun config.ru
 
 		nohup bundle exec unicorn config.ru > web.log &
+
+## Start handtracking server.
+
+    ant build
+    ant InputServer
