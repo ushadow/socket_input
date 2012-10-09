@@ -41,6 +41,10 @@ jar files to server/lib
 For reloading the application every time a new request comes in during 
 development:
 
-		bundle exec shotgun config.ru
+    bundle exec shotgun config.ru
+    nohup bundle exec unicorn config.ru > web.log &
 
-		nohup bundle exec unicorn config.ru > web.log &
+## Start handtracking server.
+
+    ant build
+    ant InputServer
