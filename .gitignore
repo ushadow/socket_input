@@ -5,3 +5,4 @@ server/bin/*
 !server/bin/.gitkeep
 server/lib/*
 !server/lib/.gitkeep
+build

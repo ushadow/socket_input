@@ -5,61 +5,86 @@
               directory with the processing instruction <?eclipse.ant.import?>
               as the first entry and export the buildfile again. -->
 <project basedir="." default="build" name="socket_input">
-    <property environment="env"/>
-    <property name="ECLIPSE_HOME" value="../../../eclipse"/>
-    <property name="debuglevel" value="source,lines,vars"/>
-    <property name="target" value="1.6"/>
-    <property name="source" value="1.6"/>
-    <path id="socket_input.classpath">
-        <pathelement location="server/bin"/>
-        <pathelement location="/usr/share/java/org.OpenNI.jar"/>
-        <pathelement location="server/lib/servlet-api-3.0.jar"/>
-        <pathelement location="server/lib/jetty-continuation-8.1.5.v20120716.jar"/>
-        <pathelement location="server/lib/jetty-http-8.1.5.v20120716.jar"/>
-        <pathelement location="server/lib/jetty-io-8.1.5.v20120716.jar"/>
-        <pathelement location="server/lib/jetty-server-8.1.5.v20120716.jar"/>
-        <pathelement location="server/lib/jetty-util-8.1.5.v20120716.jar"/>
-        <pathelement location="server/lib/jetty-websocket-8.1.5.v20120716.jar"/>
-    </path>
-    <target name="init">
-        <mkdir dir="server/bin"/>
-        <copy includeemptydirs="false" todir="server/bin">
-            <fileset dir="server/src">
-                <exclude name="**/*.launch"/>
-                <exclude name="**/*.java"/>
-            </fileset>
-        </copy>
-    </target>
-    <target name="clean">
-        <delete dir="server/bin"/>
-    </target>
-    <target depends="clean" name="cleanall"/>
-    <target depends="build-subprojects,build-project" name="build"/>
-    <target name="build-subprojects"/>
-    <target depends="init" name="build-project">
-        <echo message="${ant.project.name}: ${ant.file}"/>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="server/bin" source="${source}" target="${target}">
-            <src path="server/src"/>
-            <classpath refid="socket_input.classpath"/>
-        </javac>
-    </target>
-    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
-    <target description="copy Eclipse compiler jars to ant lib directory" name="init-eclipse-compiler">
-        <copy todir="${ant.library.dir}">
-            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
-        </copy>
-        <unzip dest="${ant.library.dir}">
-            <patternset includes="jdtCompilerAdapter.jar"/>
-            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
-        </unzip>
-    </target>
-    <target description="compile project with Eclipse compiler" name="build-eclipse-compiler">
-        <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
-        <antcall target="build"/>
-    </target>
-    <target name="InputServer">
-        <java classname="edu.mit.yingyin.websocket.InputServer" failonerror="true" fork="yes">
-            <classpath refid="socket_input.classpath"/>
-        </java>
-    </target>
+  <property environment="env"/>
+  <property name="ECLIPSE_HOME" value="../../../eclipse"/>
+  <property name="debuglevel" value="source,lines,vars"/>
+  <property name="target" value="1.6"/>
+  <property name="source" value="1.6"/>
+	<property name="build.dir" value="build"/>
+	<property name="jar.dir" value="${build.dir}/jar"/>
+	<property name="jar.file" value="${jar.dir}/input-server.jar"/>
+	<property name="manifest.file" value="${jar.dir}/MANIFEST.MF"/>
+	<property name="lib.dir" value="server/lib"/>
+	<property name="class.dir" value="${build.dir}/bin" />
+  <path id="socket_input.classpath">
+      <pathelement location="server/bin"/>
+      <pathelement location="/usr/share/java/org.OpenNI.jar"/>
+      <pathelement location="server/lib/servlet-api-3.0.jar"/>
+      <pathelement location="server/lib/jetty-continuation-8.1.5.v20120716.jar"/>
+      <pathelement location="server/lib/jetty-http-8.1.5.v20120716.jar"/>
+      <pathelement location="server/lib/jetty-io-8.1.5.v20120716.jar"/>
+      <pathelement location="server/lib/jetty-server-8.1.5.v20120716.jar"/>
+      <pathelement location="server/lib/jetty-util-8.1.5.v20120716.jar"/>
+      <pathelement location="server/lib/jetty-websocket-8.1.5.v20120716.jar"/>
+  </path>
+  <target name="init">
+      <mkdir dir="${class.dir}"/>
+  	  <mkdir dir="${jar.dir}"/>
+      <copy includeemptydirs="false" todir="${class.dir}">
+          <fileset dir="server/src">
+              <exclude name="**/*.launch"/>
+              <exclude name="**/*.java"/>
+          </fileset>
+      </copy>
+  </target>
+  <target name="clean">
+      <delete dir="server/bin"/>
+  </target>
+  <target depends="clean" name="cleanall"/>
+  <target depends="build-subprojects,build-project" name="build"/>
+  <target name="build-subprojects"/>
+  <target depends="init" name="build-project">
+      <echo message="${ant.project.name}: ${ant.file}"/>
+      <javac debug="true" debuglevel="${debuglevel}" destdir="${class.dir}" source="${source}" target="${target}">
+          <src path="server/src"/>
+          <classpath refid="socket_input.classpath"/>
+      </javac>
+  </target>
+  <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
+  <target description="copy Eclipse compiler jars to ant lib directory" name="init-eclipse-compiler">
+      <copy todir="${ant.library.dir}">
+          <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
+      </copy>
+      <unzip dest="${ant.library.dir}">
+          <patternset includes="jdtCompilerAdapter.jar"/>
+          <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
+      </unzip>
+  </target>
+  <target description="compile project with Eclipse compiler" name="build-eclipse-compiler">
+      <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
+      <antcall target="build"/>
+  </target>
+  <target name="InputServer">
+      <java classname="edu.mit.yingyin.websocket.InputServer" failonerror="true" fork="yes">
+          <classpath refid="socket_input.classpath"/>
+      </java>
+  </target>
+	<target name="build-jar" depends="build">
+		<delete file="${jar.file}"/>
+		<delete file="${manifest.file}"/>
+		<manifest file="${manifest.file}">
+		  <attribute name="built-by" value="${user.name}"/>
+		</manifest>
+    <jar destfile="${jar.file}" manifest="${manifest.file}">
+    	<fileset dir="${class.dir}" includes="**/websocket/*.class"/>
+    	<restrict>
+    	  <name name="**/*.class"/>
+    	  <archives>
+	        <zips>
+	          <fileset dir="${lib.dir}" includes="**/*.jar"/>
+	        </zips>
+    	  </archives>
+    	</restrict>
+    </jar>
+	</target>
 </project>
