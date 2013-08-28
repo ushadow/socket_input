@@ -34,6 +34,9 @@ jar files to server/lib
 	the sample program org.OpenNI.Samples.UserTracker crashes. The C++ version of the user tracking program runs
 	fine though. I reported this bug in the [OpneNI Google group] (https://groups.google.com/d/msg/openni-dev/259RT7dVSy4/jK0YSikT5NEJ).
 
+### Rubygems
+	bundle install
+
 # Setup
 
 ## Start up the web server.
